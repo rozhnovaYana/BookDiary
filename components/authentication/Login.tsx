@@ -1,62 +1,83 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, Text, View, Image } from "react-native";
+import { useContext, useState } from "react";
+import { StyleSheet, View, Alert, Image, Text } from "react-native";
 
+import { User } from "../../types/user";
+import { signInWithPassword } from "../../utills/auth";
+import { checkIsEmail, checkPassword } from "../../utills/validation";
+import { AuthContext } from "../../store/auth/authContext";
+import LoginForm from "./LoginForm";
 import { Fonts } from "../../constants/constants";
 
-import PressableIcon from "../UI/PressableIcon";
-import Input from "../UI/Input";
-import Button from "../UI/Button";
 import Subtitle from "../UI/Subtitle";
-import Form from "./Form";
+import LocalAuth from "./LocalAuth";
 
 export default () => {
-  const [passwordVisible, setPasswordVisibility] = useState<boolean>(false);
-  const togglePasswordVisibility = () => {
-    setPasswordVisibility((passwordVisible) => !passwordVisible);
+  const [error, setError] = useState<any>();
+  const authContext = useContext(AuthContext);
+  const [user, setUser] = useState<User>({
+    name: {
+      value: "",
+      isValid: true,
+    },
+    email: {
+      value: "",
+      isValid: true,
+    },
+    password: {
+      value: "",
+      isValid: true,
+    },
+  });
+
+  const onChangeHandler = (option: keyof User, value: string) => {
+    setUser((user) => ({ ...user, [option]: { isValid: true, value } }));
   };
+
+  const loginHandler = async () => {
+    const { email, password } = user;
+    const emailIsValid = checkIsEmail(email.value);
+    const passwordIsValid = checkPassword(password.value);
+    setUser((user) => ({
+      ...user,
+      email: {
+        ...user.email,
+        isValid: emailIsValid,
+      },
+      password: {
+        ...user.password,
+        isValid: passwordIsValid,
+      },
+    }));
+    if (!emailIsValid || !passwordIsValid) return;
+    try {
+      const token = await signInWithPassword(email.value, password.value);
+      authContext?.setAuthorization(token);
+    } catch (err: any) {
+      setError(err);
+    }
+  };
+  if (error) {
+    Alert.alert("Something went wrong...", "Please, check you data");
+    setError(false);
+  }
   return (
     <View>
-      <Form isLogin={true} />
+      <LoginForm
+        onChangeHandler={onChangeHandler}
+        loginHandler={loginHandler}
+        user={user}
+      />
       <Subtitle>or Sign up with</Subtitle>
-      <View style={styles.faceIDWrapper}>
-        <Image
-          style={styles.faceIDImg}
-          source={require("../../assets/images/auth/face-id.png")}
-        />
-        <Text style={styles.faceIDTitle}>Use Face ID</Text>
-      </View>
+      <LocalAuth/>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   input: {
     marginVertical: 12,
   },
-  forgotPasswordText: {
-    color: "#757575",
-    fontFamily: Fonts.medium,
-    fontSize: 11,
-    textAlign: "right",
-    marginTop: -8,
-  },
   button: {
     marginTop: 32,
     marginBottom: 36,
-  },
-  faceIDWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 28,
-  },
-  faceIDImg: {
-    width: 40,
-    height: 40,
-  },
-  faceIDTitle: {
-    color: "#1C1B1E",
-    fontSize: 14,
-    fontFamily: Fonts.medium,
-    marginTop: 5,
   },
 });

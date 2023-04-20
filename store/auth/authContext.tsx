@@ -1,18 +1,25 @@
 import { ReactNode, createContext, useReducer } from "react";
 import { ActionTypes, Auth, AuthContextType } from "./authTypes";
 import authReducer from "./authReducer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-export default ({ children }: { children: ReactNode }) => {
+export default ({
+  children,
+  initialexpiresIn,
+  initialtoken,
+}: {
+  children: ReactNode;
+  initialexpiresIn: string;
+  initialtoken: string;
+}) => {
   const [state, dispatch] = useReducer(authReducer, {
-    token: "",
-    expiresIn: "0",
+    token: initialtoken,
+    expiresIn: initialexpiresIn,
   });
 
-
-
-  const setAuthorization = (authtoken: Auth) => {
+  const setAuthorization = async (authtoken: Auth) => {
     const { token, expiresIn } = authtoken;
     dispatch({
       type: ActionTypes.SET,
@@ -21,7 +28,7 @@ export default ({ children }: { children: ReactNode }) => {
         expiresIn,
       },
     });
-    
+    await AsyncStorage.setItem("token", JSON.stringify(authtoken));
   };
 
   const signOut = () => {

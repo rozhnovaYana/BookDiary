@@ -17,7 +17,6 @@ export default ({
   user: User;
   onChangeHandler: (option: keyof User, value: string) => void;
   createUser: () => void;
-  isLogin?: boolean;
 }) => {
   const [agreement, setAgreement] = useState<boolean>(false);
   const agreementHandler = () => {
@@ -48,7 +47,9 @@ export default ({
         textContentType="password"
         value={password.value}
         onChangeText={(t) => onChangeHandler("password", t)}
-      />
+      >
+        at least 8 characters
+      </PasswordInput>
       <Checkbox onPress={agreementHandler} isChecked={agreement}>
         I agree to the Terms and Privacy
       </Checkbox>

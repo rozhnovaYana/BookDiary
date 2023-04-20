@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { StyleSheet, View, Alert } from "react-native";
 
-import Form from "./Form";
+import Form from "./SignUpForm";
 import { User } from "../../types/user";
 import { signUp } from "../../utills/auth";
 import { checkIsEmail, checkPassword } from "../../utills/validation";

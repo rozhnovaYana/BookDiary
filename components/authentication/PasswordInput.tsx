@@ -6,7 +6,7 @@ import { Fonts } from "../../constants/constants";
 import PressableIcon from "../UI/PressableIcon";
 import Input, { InputProps } from "../UI/Input";
 
-export default ({ isValid, ...textInput }: InputProps) => {
+export default ({ isValid, children, ...textInput }: InputProps) => {
   const [passwordVisible, setPasswordVisibility] = useState<boolean>(false);
   const togglePasswordVisibility = () => {
     setPasswordVisibility((passwordVisible) => !passwordVisible);
@@ -26,7 +26,7 @@ export default ({ isValid, ...textInput }: InputProps) => {
         />
       </Input>
       <View>
-        <Text style={styles.forgotPasswordText}>at least 8 characters </Text>
+        <Text style={styles.forgotPasswordText}>{children}</Text>
       </View>
     </>
   );
