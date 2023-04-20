@@ -55,7 +55,7 @@ export default () => {
       )}
       renderDoneButton={() => (
         <Button
-          onPress={() => navigation.navigate("AuthenticationScreen")}
+          onPress={() => {}}
           style={styles.doneBtn}
         >
           Get started
