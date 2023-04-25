@@ -1,22 +1,29 @@
 import { useCallback, useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { Fonts } from "./constants/constants";
 import { NavigationContainer } from "@react-navigation/native";
-import RootNavigation from "./navigation/RootNavigation";
-import { Colors } from "./constants/constants";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import RootNavigation from "./navigation/RootNavigation";
+
+import { Fonts, Colors } from "./constants/constants";
+
 import AuthContext from "./store/auth/authContext";
+
 import { getToken } from "./utills/auth";
+import { Auth } from "./store/auth/authTypes";
+
+import * as LocalAuthentication from "expo-local-authentication";
 
 SplashScreen.preventAutoHideAsync();
-
-export default function App() {
+export default () => {
   const [token, setToken] = useState({
-    initialtoken: "",
-    initialexpiresIn: "",
+    token: "",
+    expiresIn: "",
+    name: "",
+    savedBiometrics: false,
     isLoading: true,
   });
 
@@ -28,6 +35,7 @@ export default function App() {
     [regular]: require("./assets/fonts/Poppins-Regular.ttf"),
     [bold]: require("./assets/fonts/Poppins-Bold.ttf"),
   });
+
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded && !token.isLoading) {
       await SplashScreen.hideAsync();
@@ -36,29 +44,30 @@ export default function App() {
 
   useEffect(() => {
     const tokenHadler = async () => {
-      setToken((t) => ({
-        ...t,
-        isLoading: true,
-      }));
-      try {
-        const token = await getToken();
-        if (token) {
-          setToken((t) => ({
-            ...t,
-            initialexpiresIn: token.expiresIn,
-            initialtoken: token.token,
-          }));
-        }
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setToken((t) => ({
+      const initialToken: Auth = await getToken();
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      const savedBiometrics =
+        compatible && (await LocalAuthentication.isEnrolledAsync());
+      if (initialToken) {
+        return setToken((t) => ({
           ...t,
+          ...initialToken,
+          savedBiometrics,
           isLoading: false,
         }));
       }
     };
-    tokenHadler();
+
+    try {
+      tokenHadler();
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setToken((t) => ({
+        ...t,
+        isLoading: false,
+      }));
+    }
   }, []);
 
   if (!fontsLoaded || token.isLoading) return null;
@@ -67,17 +76,14 @@ export default function App() {
       <StatusBar style="auto" backgroundColor={Colors.plum_100} />
       <NavigationContainer>
         <SafeAreaView style={styles.container}>
-          <AuthContext
-            initialtoken={token.initialtoken}
-            initialexpiresIn={token.initialexpiresIn}
-          >
+          <AuthContext initialToken={token}>
             <RootNavigation />
           </AuthContext>
         </SafeAreaView>
       </NavigationContainer>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

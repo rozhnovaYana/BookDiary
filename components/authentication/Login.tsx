@@ -1,36 +1,35 @@
 import { useContext, useState } from "react";
-import { StyleSheet, View, Alert, Image, Text } from "react-native";
+import { StyleSheet, View, Alert } from "react-native";
 
 import { User } from "../../types/user";
 import { signInWithPassword } from "../../utills/auth";
 import { checkIsEmail, checkPassword } from "../../utills/validation";
 import { AuthContext } from "../../store/auth/authContext";
 import LoginForm from "./LoginForm";
-import { Fonts } from "../../constants/constants";
 
 import Subtitle from "../UI/Subtitle";
 import LocalAuth from "./LocalAuth";
+import { Auth } from "../../store/auth/authTypes";
 
 export default () => {
   const [error, setError] = useState<any>();
   const authContext = useContext(AuthContext);
+  const initialItem = {
+    value: "",
+    isValid: true,
+  };
   const [user, setUser] = useState<User>({
-    name: {
-      value: "",
-      isValid: true,
-    },
-    email: {
-      value: "",
-      isValid: true,
-    },
-    password: {
-      value: "",
-      isValid: true,
-    },
+    name: initialItem,
+    email: initialItem,
+    password: initialItem,
   });
 
   const onChangeHandler = (option: keyof User, value: string) => {
     setUser((user) => ({ ...user, [option]: { isValid: true, value } }));
+  };
+
+  const faceIDLogin = (token: Auth) => {
+    authContext?.setAuthorization(token);
   };
 
   const loginHandler = async () => {
@@ -68,7 +67,9 @@ export default () => {
         user={user}
       />
       <Subtitle>or Sign up with</Subtitle>
-      <LocalAuth/>
+      {authContext?.token.savedBiometrics && (
+        <LocalAuth faceIDLogin={faceIDLogin} />
+      )}
     </View>
   );
 };

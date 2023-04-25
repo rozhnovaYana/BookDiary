@@ -4,7 +4,11 @@ import { StyleSheet, View, Alert } from "react-native";
 import Form from "./SignUpForm";
 import { User } from "../../types/user";
 import { signUp } from "../../utills/auth";
-import { checkIsEmail, checkPassword } from "../../utills/validation";
+import {
+  checkIsEmail,
+  checkIsNotEmpty,
+  checkPassword,
+} from "../../utills/validation";
 import { AuthContext } from "../../store/auth/authContext";
 
 export default () => {
@@ -30,7 +34,8 @@ export default () => {
   };
 
   const createUser = async () => {
-    const { email, password } = user;
+    const { email, password, name } = user;
+    const nameIsValid = checkIsNotEmpty(name?.value);
     const emailIsValid = checkIsEmail(email.value);
     const passwordIsValid = checkPassword(password.value);
     setUser((user) => ({
@@ -43,10 +48,14 @@ export default () => {
         ...user.password,
         isValid: passwordIsValid,
       },
+      name: {
+        ...user.name,
+        isValid: nameIsValid,
+      },
     }));
     if (!emailIsValid || !passwordIsValid) return;
     try {
-      const token = await signUp(email.value, password.value);
+      const token = await signUp(email.value, password.value, name.value);
       authContext?.setAuthorization(token);
     } catch (err: any) {
       setError(err);

@@ -4,7 +4,14 @@ import Logo from "../components/UI/Logo";
 import SignUp from "../components/authentication/SignUp";
 import { useState } from "react";
 import Login from "../components/authentication/Login";
+import { CompositeScreenProps } from "@react-navigation/native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AuthorizedContentNavigator, RootNavigator } from "../navigation/types";
 
+export type AuthenticationScreenParamList = CompositeScreenProps<
+  NativeStackScreenProps<RootNavigator, "AuthNavigator">,
+  NativeStackScreenProps<AuthorizedContentNavigator>
+>;
 export default () => {
   const [authStatus, setAuthStatus] = useState<"login" | "signUp">("login");
   const isLogin = authStatus === "login";

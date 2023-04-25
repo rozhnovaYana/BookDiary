@@ -1,6 +1,9 @@
 export type Auth = {
   token: string;
   expiresIn: string;
+  refreshToken?: string;
+  name: string;
+  savedBiometrics?: boolean;
 };
 export interface AuthContextType {
   token: Auth;

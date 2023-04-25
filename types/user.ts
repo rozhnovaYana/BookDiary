@@ -3,7 +3,7 @@ type Props = {
   isValid: boolean
 }
 export type User = {
-  name?: Props;
+  name: Props;
   email: Props;
   password: Props;
 };
